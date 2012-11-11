@@ -123,16 +123,16 @@ void GeneNetwork::load_tsv(const char *filename) {
     // data matrix
     while (getline(data_file, line)) {
         std::istringstream ls(line);
-        getline(ls, entry, ',');
+        getline(ls, entry, '\t');
         std::string src_str = entry;
         HillGene *src = new HillGene(entry);
         //::logging::log::emit<Debug>() << entry.c_str() << "\t";
         
-        getline(ls, entry, ',');
+        getline(ls, entry, '\t');
         std::string tgt_str = entry;
 		HillGene *tgt = new HillGene(entry);
         //::logging::log::emit<Debug>() << entry.c_str() << "\t";
-        getline(ls, entry, ',');
+        getline(ls, entry, '\t');
         //::logging::log::emit<Debug>() << entry.c_str() << ::logging::log::endl;
         inDegrees[tgt_str]++;
         outDegrees[src_str]++;

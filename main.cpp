@@ -57,8 +57,8 @@ int main(int argc, char **argv) {
     ss << i + 1;
     ssn << nid;
     sssize << size;
-    //std::string filename = indir + type + "-" + ssn.str() + "_1000.tsv";
-    std::string filename = indir + "ecoli_transcriptional_network_regulonDB_6_2.tsv";
+    std::string filename = indir + type + "-" + ssn.str() + "_1000.tsv";
+    //std::string filename = indir + "ecoli_transcriptional_network_regulonDB_6_2.tsv";
     //std::string filename = indir + "yeast_transcriptional_network_Balaji2006.tsv";
     //std::string filename = indir + "ecoli-full.xml";
     //std::string filename = indir + type + "-" + ss.str() + "_" + sssize.str() + 
@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
 		//std::stringstream ss;
 		//ss << i + 1;
 	//net->setId(type + "-" + ss.str() + "_" + ssn.str());
-	//net->setId(type + "-" + ssn.str());
-    net->setId(type + "-full");
+	net->setId(type + "-" + ssn.str());
+    //net->setId(type + "-full");
 
     //for (std::vector< std::pair<std::string,int> >::iterator it = net->outDegreesVec.begin();
     //     it != net->outDegreesVec.end(); ++it)
