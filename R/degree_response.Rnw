@@ -1,0 +1,365 @@
+% $Id: degree_response.Rnw 328 2012-07-23 09:23:31Z jbao $
+
+\documentclass[a4paper]{article}
+
+\usepackage{graphicx,subfig}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{color, colortbl}
+\definecolor{Gray}{gray}{0.9}
+
+\DeclareMathOperator{\erf}{erf}
+\DeclareMathOperator{\IQR}{IQR}
+\everymath{\displaystyle}
+
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+\mathchardef\mhyphen="2D
+
+\newenvironment{narrow}[2]{%
+  \begin{list}{}{%
+  \setlength{\topsep}{0pt}%
+  \setlength{\leftmargin}{#1}%
+  \setlength{\rightmargin}{#2}%
+  \setlength{\listparindent}{\parindent}%
+  \setlength{\itemindent}{\parindent}%
+  \setlength{\parsep}{\parskip}}%
+\item[]}{\end{list}}
+
+\title{Degree-response anti-correlation}
+\author{Jie Bao}
+
+\begin{document}
+
+\maketitle
+
+<<label=base,echo=False,fig=FALSE,cache=True>>=
+library(ggplot2)
+library(reshape)
+library(plyr)
+library(doMC)
+registerDoMC()
+
+fontsize <- 15
+theme_set(theme_bw(fontsize))
+
+subplot <- function(x, y) viewport(layout.pos.row=x, layout.pos.col=y) 
+vplayout <- function(x, y) {
+    grid.newpage() 
+    pushViewport(viewport(layout=grid.layout(x,y)))
+}
+@
+
+% ----------------------------------------------------------------------------
+
+%\begin{figure}[ht]
+%\begin{center}
+%<<label=example,echo=False,fig=True,width=12,height=6>>=
+%fname <- c('~/data/hgf/deg_dist_hgf_17726',
+%    '~/data/rage/deg_dist_rage_17498',
+%    '~/data/cfu/deg_dist_cfu_epo_21464',
+%    '~/data/ecoli/deg_dist_GSE20305-oxidative',
+%    '~/data/yeast/deg_dist_yeast_alpha_6178',
+%    '~/data/DREAM/gnw/random/gnw/Size1000/mds/deg_dist_random-1_perturbation-1_1000',
+%    '~/data/DREAM/gnw/uniform/gnw/Size1000/mds/deg_dist_uniform-1_perturbation-1_1000',
+%    '~/data/DREAM/gnw/smallworld/gnw/Size1000/mds/deg_dist_smallworld-1_perturbation-1_1000',
+%    '~/data/DREAM/gnw/scalefree/gnw/Size1000/mds/deg_dist_scalefree-1_perturbation-1_1000',
+%    '~/data/DREAM/gnw/bowtie/gnw/Size1000/mds/deg_dist_bowtie-1_perturbation-1_1000',
+%    '~/data/DREAM/gnw/hub/gnw/Size1000/mds/deg_dist_hub-1_perturbation-1_1000')
+%dataset <- c('NHK + HGF','Mouse Skin + TPA','CFU-E + Epo','E. coli + oxidative stress','Yeast + alpha factor',
+%    'Random','Uniform','Small-world','Scale-free','Bow-tie','Hub')
+%
+%all <- NULL
+%all.mean <- NULL
+%for (i in 1:(length(fname)-1)) {
+%    dat <- read.delim(fname[i], header=F)
+%    deg <- dat$V2
+%    dist <- -log10(dat$V3)
+%    deg <- deg/max(deg)
+%    dist <- dist/max(dist)
+%    
+%    all.mean <- rbind(all.mean, data.frame(x=mean(dist),y=mean(deg),net=dataset[i]))
+%    all <- rbind(all, data.frame(deg=deg, dist=dist, net=dataset[i]))
+%}
+%print(ggplot(all, aes(dist,deg)) + geom_point() +  
+%    #geom_density2d() +
+%    geom_point(data=all.mean,aes(x,y),shape='*',colour='red',size=8) +
+%    geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+%    facet_wrap(~net,ncol=5) + xlab('Response') +
+%    ylab('Degree')
+%)
+%@
+%\end{center}
+%\caption{Degree-response anti-correlation for biological networks and 5 
+%examples of artificial networks.}
+%\label{fig:raw}
+%\end{figure}
+
+% ----------------------------------------------------------------------------
+
+%\begin{figure}[ht]
+%\begin{center}
+<<label=artificial,echo=False,fig=False,width=12,height=12,eval=False>>=
+dataset <- c('random','uniform','smallworld','scalefree','bowtie')
+
+all <- foreach (i = 1:length(dataset), .combine='rbind') %:%
+    foreach(j=1:5, .combine='rbind') %:%
+        foreach(k=1:1000, .combine='rbind') %dopar% {
+
+    dat <- read.delim(paste('~/data/DREAM/gnw/',dataset[i],'/gnw/Size1000/mds/deg_dist_',dataset[i],'-',j,'_perturbation-',k,'_1000',sep=''), header=F)
+    deg <- dat$V2
+    dist <- -log10(dat$V3)
+    deg <- deg/max(deg)
+    dist <- dist/max(dist)
+    
+    data.frame(x=mean(dist),y=mean(deg),type=dataset[i],
+        net=as.character(j), perturbation=k)
+}
+#print(ggplot(all, aes(x,y)) + geom_point(aes(colour=net),size=1,alpha=0.3) +  
+#    #geom_density2d() +
+#    scale_colour_brewer(palette='Set1') +
+#    geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+#    facet_grid(net~type) + xlim(0,1) + ylim(0,1) +
+#    xlab('Response') + ylab('Degree') +
+#    opts(legend.position='none')
+#)
+@
+%\end{center}
+%\caption{Degree-response anti-correlation for 5 
+%artificial networks, each of which has 5 realizations and 1000 perturbations.}
+%\label{fig:raw}
+%\end{figure}
+
+% ----------------------------------------------------------------------------
+
+%\begin{figure}[ht]
+%\begin{center}
+%<<label=summary,echo=False,fig=True>>=
+%artificial.mean <- ddply(all, .(type), function(df) data.frame(x=mean(df$x),
+%    y=mean(df$y),net=df$type[1]))
+%artificial.error <- ddply(all, .(type), function(df) data.frame(xmean=mean(df$x),
+%    ymean=mean(df$y),xsd=sd(df$x),ysd=sd(df$y),net=df$type[1]))
+%df <- rbind(artificial.mean[,-1], all.mean[1:5,])
+%print(ggplot(df, aes(x,y)) + 
+%    geom_point(aes(colour=net),size=3) +  
+%    geom_errorbar(data=artificial.error,aes(xmean,ymean,ymin=ymean-ysd,
+%        ymax=ymean+ysd,colour=net),width=0.002,show_guide=F) +
+%    geom_errorbarh(data=artificial.error,aes(xmean,ymean,xmin=xmean-xsd,
+%        xmax=xmean+xsd,colour=net),height=0.02,show_guide=F) +
+%    geom_text(data=df[1:5,],aes(x,y,label=net),size=3,vjust=-0.8) +
+%    #geom_text(data=df[6:10,],aes(x,y,label=net),size=3,vjust=1.8) +
+%    scale_colour_brewer('',palette='Paired',breaks=df$net[6:10]) +
+%    geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+%    xlab('Response') + ylab('Degree') + xlim(0,0.06) +
+%    opts(legend.position=c(0.75,0.85),legend.key=theme_blank())
+%)
+%@
+%\end{center}
+%\caption{Centers of mass for biological and artificial networks.}
+%\label{fig:raw}
+%\end{figure}
+
+% ----------------------------------------------------------------------------
+
+%\begin{figure}[ht]
+%\begin{center}
+%<<label=time_degree,echo=False,fig=True,width=7,height=7>>=
+%library(sn)
+%ts <- read.delim('~/data/hgf/hgf_17726.dat', sep='|')
+%ppi <- read.csv('~/data/network/biogrid.degree', header=F)
+%#ppi <- read.csv('~/data/network/hppi.degree', header=F)
+%#ppi <- read.csv('~/data/network/hippie.degree', header=F)
+%tpoint <- c(0:4,6,8)
+%names(ts) <- c('Gene',paste(tpoint,'h'))
+%idx <- match(ts$Gene, ppi$V1)
+%ts <- ts[!is.na(idx),-2]
+%ts$degree <- ppi$V2[match(ts$Gene,ppi$V1)]
+%ts$degree <- as.numeric(as.vector(ts$degree))
+%df <- melt(ts, id.vars=c('Gene','degree'))
+%com <- ddply(df, .(variable), summarise, response=mean(value), 
+%    degree=mean(degree))
+%
+%# skew T distribution
+%df.fit <- NULL
+%pval.up <- NULL
+%pval.down <- NULL
+%cutoff <- 0.005
+%for (i in 2:length(tpoint)) {
+%    fit <- st.mle(y=ts[,i])
+%    xfit <- seq(min(ts[,i]), max(ts[,i]), by=0.1)
+%    yfit <- dst(xfit, dp=fit$dp)
+%    pval <- pst(xfit, dp=fit$dp)
+%    cutoff.up <- min(xfit[pval>1-cutoff])
+%    cutoff.down <- max(xfit[pval<cutoff])
+%    df.fit <- rbind(df.fit, data.frame(xfit=xfit, yfit=yfit, 
+%        variable=paste(tpoint[i],'h'), cutoff.up=cutoff.up, 
+%        cutoff.down=cutoff.down))
+%    
+%    down <- pst(ts[,i], dp=fit$dp)
+%    up <- 1 - down
+%    pval.up <- c(pval.up, up)
+%    pval.down <- c(pval.down, down)
+%
+% 	# Calculate the qvalue
+% 	#logset$qval <- NA
+% 	#q <- pcorrection(logset$Pval,proc="BH")
+% 	#logset$qval[q$index] <- q$adjp[,2]
+%
+% 	#idx4 <- which(ratio$Pval <0.05 & ratio$fe > 0)
+%}
+%df$pval.up <- pval.up
+%df$pval.down <- pval.down
+%
+%toplot <- df[df$pval.up<cutoff,]
+%df.mean <- ddply(toplot, .(variable), summarise, 
+%    degree=mean(degree))
+%print(ggplot(toplot, aes(variable,degree)) + 
+%    geom_boxplot() +
+%    geom_point(data=df.mean,aes(variable,degree),colour='blue') +
+%    #scale_colour_manual(values=gray.colors(nrow(com),0.9,0)) +
+%    #geom_text(aes(label=variable),size=3,vjust=-0.2,alpha=0.3) +
+%    #geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+%    xlab('') + ylab('Degree') +
+%    opts(title='NHK + HGF upregulation')
+%)
+%@
+%\end{center}
+%\caption{Centers of mass for biological and artificial networks.}
+%\label{fig:raw}
+%\end{figure}
+
+% ----------------------------------------------------------------------------
+
+%\begin{figure}[ht]
+%\begin{center}
+%<<label=st_fit,echo=False,fig=True,width=8,height=6>>=
+%print(ggplot(df, aes(value)) + 
+%    geom_histogram(aes(y=..density..),colour='black',fill='gray') +  
+%    geom_point(aes(y=0.1),alpha=0.2) +
+%    geom_line(data=df.fit,aes(xfit,yfit),colour='blue',linetype='dashed') +
+%    geom_vline(data=df.fit,aes(xintercept=cutoff.up),colour='red') +
+%    #geom_vline(data=df.fit,aes(xintercept=cutoff.down),colour='red') +
+%    facet_wrap(~variable,ncol=3) + 
+%    xlab(expression(paste(log[2],' fold expression'))) + ylab('Density') +
+%    opts(title='NHK + HGF')
+%)
+%@
+%\end{center}
+%\caption{Centers of mass for biological and artificial networks.}
+%\label{fig:raw}
+%\end{figure}
+
+% ----------------------------------------------------------------------------
+
+\begin{figure}[ht]
+\begin{center}
+<<label=hdf,echo=False,fig=True>>=
+ts <- read.delim('~/geronto/data/hdf/hdf_nhk_16091.tsv')
+pval <- read.delim('~/geronto/data/hdf/mds/pval_hdf_nhk_16091.dat', header=F)$V1
+ppi <- read.csv('~/geronto/data/network/biogrid.degree', header=F)
+#ppi <- read.csv('~/data/network/hppi.degree', header=F)
+#ppi <- read.csv('~/data/network/hippie.degree', header=F)
+idx <- match(ts$Gene, ppi$V1)
+ts <- ts[!is.na(idx),]
+ts$degree <- ppi$V2[match(ts$Gene,ppi$V1)]
+ts$degree <- as.numeric(as.vector(ts$degree))
+ts$pval <- pval[!is.na(idx)]
+
+print(ggplot(ts, aes(-log10(pval),degree)) + 
+    geom_point() +
+    geom_text(data=ts[ts$pval<1e-10|ts$degree>200,],aes(label=Gene),size=3,
+        vjust=-0.5,alpha=0.3) +
+    #geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+    xlim(0,20) + ylim(0,1000) + 
+    xlab('Response') + ylab('Degree') +
+    opts(title='HDF + NHK-conditioned medium')
+)
+@
+\end{center}
+\caption{Centers of mass for biological and artificial networks.}
+\label{fig:raw}
+\end{figure}
+
+% ----------------------------------------------------------------------------
+
+\begin{figure}[ht]
+\begin{center}
+<<label=hdf_go,echo=False,fig=True>>=
+library(GOstats)
+library(org.Hs.eg.db)
+ts$cat <- 3
+ts$cat[-log10(ts$pval)/max(-log10(ts$pval))<=0.01] <- 1
+ts$cat[-log10(ts$pval)/max(-log10(ts$pval))>0.01&-log10(ts$pval)/max(-log10(ts$pval))<=0.1] <- 2
+
+# GO enrichment
+allentrez <- as.character(unlist(mget(as.character(ts$Gene), org.Hs.egSYMBOL2EG, 
+    ifnotfound=NA)))
+#allentrez <- mappedkeys(org.Hs.egGO)
+all.stat <- NULL
+for (i in 1:3) {
+    entrez <- as.character(unlist(mget(as.character(ts$Gene[ts$cat==i]), 
+        org.Hs.egSYMBOL2EG, ifnotfound=NA)))
+
+    cutoff <- 0.05
+    params <- new("GOHyperGParams", geneIds = entrez, universeGeneIds = allentrez, 
+        annotation = "org.Hs.eg", ontology = "BP", pvalueCutoff = cutoff, 
+        conditional = FALSE, testDirection = "under")
+    go.over <- hyperGTest(params)
+    stat <- summary(go.over)
+
+    # Get the level for all GO ids
+    stat$level <- NA
+    for (ii in 1:dim(stat)[1]) {
+        k <- 1
+        gg <- stat$GOBPID[ii]
+        while (gg != "all") {
+            gg <- unlist(mget(gg,GOBPPARENTS))[1]
+            k <- k + 1
+        }
+        stat$level[ii] <- k
+    }
+
+    selected <- which(stat$level > 2 & stat$level < 4)
+    stat <- stat[selected, c(1,2,7)]
+    #stat <- stat[,c(1,2,7)]
+    all.stat <- c(all.stat, list(stat))
+    if (i == 1)
+        common <- stat$Term
+    else
+        common <- union(common, stat$Term)
+}
+
+common <- common[!is.na(common)]
+final <- matrix(0,length(common),3)
+for (j in 1:3) {
+    for (i in 1:length(common)) {
+        if (common[i] %in% all.stat[[j]]$Term)
+            final[i,j] = -log10(all.stat[[j]]$Pvalue[which(all.stat[[j]]$Term==common[i])])
+        else
+            final[i,j] = 0
+    }
+}
+
+df <- as.data.frame(final)
+names(df) <- c('weak','medium','strong')
+df$term <- common
+df <- melt(df, id.vars='term')
+mycolor <- gray.colors(128,0.9,0)
+print(ggplot(df,aes(variable,term)) + geom_tile(aes(fill=value)) +
+    scale_fill_gradientn(colours=mycolor) +
+    guides(fill = guide_colorbar(barwidth = 0.5, barheight = 10, title.hjust=2.2,
+        title=expression(paste(-log[10],' ',italic(p),'-value')))) +
+    labs(x = "Response",y = "") + scale_x_discrete(expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0, 0)) +
+    opts(axis.ticks = theme_blank(),axis.text.x=theme_text(angle=45),
+        panel.border=theme_blank(),legend.title=theme_text(angle=90),
+        title='GO term enrichment')
+)
+@
+\end{center}
+\caption{Centers of mass for biological and artificial networks.}
+\label{fig:raw}
+\end{figure}
+
+\end{document}

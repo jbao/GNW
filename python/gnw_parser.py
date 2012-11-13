@@ -12,7 +12,7 @@ from pdb import set_trace
 net = sys.argv[1]
 #size = 100
 #wd = '/home/jbao/DREAM/gnw/'+net+'/gnw/Size'+str(size)+'/default/rewiring/'
-wd = '/home/jbao/data/DREAM/gnw/'+net+'/gnw/full/'
+wd = '/home/jbao/data/DREAM/gnw/'+net+'/gnw/Size1000/test/'
 #wd = '/Users/bao/work/DREAM/DREAM3_in_silico_challenge/Size'+str(size)+'/gnw/'
 n_perturb = 1
 delim = '|'
