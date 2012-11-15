@@ -120,6 +120,7 @@ void BenchmarkGenerator::generateGoldStandard() {
 		TimeSeriesExperiment exp = timeSeriesExperiments_.at(i);
         std::stringstream ss;
         ss << pn;
+		//::logging::log::emit<Debug>() << "Perturbation number " << ss.str().c_str() << ::logging::log::endl;
 		exp.printAll(postfix + "_perturbation-" + ss.str());
 		std::string label = exp.getLabel();
 		//if (label == "dream4_timeseries" || label == "multifactorial_timeseries" || label == "dualknockout_timeseries")

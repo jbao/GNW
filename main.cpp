@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     int i = 0;
     char *task = getenv("SGE_TASK_ID");
     if (task != NULL)
-        int i = atoi(task) - 1;
+        i = atoi(task) - 1;
     //lower = i / 10.0;
     //upper = (i + 1) / 10.0;
 
