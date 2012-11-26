@@ -109,6 +109,7 @@ void PerturbationMultifactorial::multifactorialAllGenesWeak(int numPerturbations
 	for (int p=0; p<numPerturbations_; p++) {
 		for (int g=0; g<numGenes_; g++) {
 			perturbations_[p][g] = GnwSettings::Instance()->getNormalDistributionNumber(0, stdev_);
+			//perturbations_[p][g] = GnwSettings::Instance()->getUniformDistributionNumber(1);
 		}
 	}
 }

@@ -309,6 +309,7 @@ void BenchmarkGenerator::runTimeSeriesExperiments() throw(std::exception) {
 				multifact = new PerturbationMultifactorial(&grn_);
 				//multifact->multifactorialHub(GnwSettings::Instance()->getNumTimeSeries());
 				multifact->multifactorialAllGenesWeak(GnwSettings::Instance()->getNumTimeSeries());
+				//multifact->multifactorialAllGenesMax(GnwSettings::Instance()->getNumTimeSeries());
 				//multifact->perturbSingleGene(GnwSettings::Instance()->getNumTimeSeries(), "crp");
     
                 int pn = GnwSettings::Instance()->getPerturbationNumber();

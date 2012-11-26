@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 	GnwSettings::Instance()->setNumTimeSeries(1);
 	GnwSettings::Instance()->setMaxtTimeSeries(200);
 	GnwSettings::Instance()->setDt(10);
-	GnwSettings::Instance()->setMaxtSteadyStateODE(500);
+	GnwSettings::Instance()->setMaxtSteadyStateODE(10);
 	//GnwSettings::Instance()->setRelativePrecision(0);
 	GnwSettings::Instance()->setPerturbationFraction(0.8, 1);
 	

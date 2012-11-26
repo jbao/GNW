@@ -12,11 +12,11 @@ from pdb import set_trace
 net = sys.argv[1]
 #size = 100
 #wd = '/home/jbao/DREAM/gnw/'+net+'/gnw/Size'+str(size)+'/default/rewiring/'
-wd = '/home/jbao/data/DREAM/gnw/'+net+'/gnw/Size1000/'
+wd = '/home/jbao/data/DREAM/gnw/'+net+'/gnw/Size1000/norm_perturbation/'
 #wd = '/Users/bao/work/DREAM/DREAM3_in_silico_challenge/Size'+str(size)+'/gnw/'
 n_perturb = 1
 delim = '|'
-n_networks = 1
+n_networks = 50
 
 #i_network = int(os.getenv('SGE_TASK_ID'))
 fileList = os.listdir(wd)
