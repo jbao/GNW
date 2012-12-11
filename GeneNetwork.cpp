@@ -132,8 +132,8 @@ void GeneNetwork::load_tsv(const char *filename) {
         std::string tgt_str = entry;
 		HillGene *tgt = new HillGene(entry);
         //::logging::log::emit<Debug>() << entry.c_str() << "\t";
-        getline(ls, entry, '\t');
         //::logging::log::emit<Debug>() << entry.c_str() << ::logging::log::endl;
+        getline(ls, entry, '\t');
         inDegrees[tgt_str]++;
         outDegrees[src_str]++;
         degrees[tgt_str]++;
@@ -677,10 +677,10 @@ void GeneNetwork::computeMRnaProductionRates(Vec_DP& productionRates) {
 		std::stringstream ss, ssx;
 		//ss << nodes_.at(i).getRegulatoryModules().size();
         ssx << x_[i];
-        if (x_[i] < 0 || std::isinf(x_[i]))
-            ::logging::log::emit<Debug>() << "node = " << 
-                nodes_.at(i).getLabel().c_str() << " x = " << 
-                ssx.str().c_str() << ::logging::log::endl;
+        //if (x_[i] < 0 || std::isinf(x_[i]))
+        //    ::logging::log::emit<Debug>() << "node = " << 
+        //        nodes_.at(i).getLabel().c_str() << " x = " << 
+        //        ssx.str().c_str() << ::logging::log::endl;
 		
 		if (GnwSettings::Instance()->getModelTranslation()) {
 			for (int j = 0; j < inputIndex.size(); ++j)

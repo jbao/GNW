@@ -211,17 +211,22 @@ void TimeSeriesExperiment::integrate(int k) {
 	*/
 	
 	// Set first line of the time series dataset (at t=0)
-	for (int i=0; i<numGenes_; i++)
+	for (int i=0; i<numGenes_; i++) {
+		xy0_[i] += perturbation_->getPerturbations()[k][i];
+        //xy0_[i] += 1;
+        if (xy0_[i] < 0)
+            xy0_[i] = 0;
 		ts[0][i] = xy0_[i];
+    }
 	if (GnwSettings::Instance()->getModelTranslation())
 		for (int i=0; i<numGenes_; i++)
 			tsProteins[0][i] = xy0_[numGenes_+i];
 	
 	// apply perturbation
 	//perturbation_->applyPerturbation(k);
-	for (int i=0; i<numGenes_; i++)
-		grn_.getNodes().at(i).perturbBasalActivation( 
-                perturbation_->getPerturbations()[k][i] );
+	//for (int i=0; i<numGenes_; i++)
+	//	grn_.getNodes().at(i).perturbBasalActivation( 
+    //            perturbation_->getPerturbations()[k][i] );
 	
     t = 0; // reset time, the time-series only really starts here
 	double dt = GnwSettings::Instance()->getDt();

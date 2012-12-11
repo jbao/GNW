@@ -16,20 +16,22 @@ int main(int argc, char **argv) {
 	
     GetOpt_pp ops(argc, argv);
     std::string outdir, indir, type;
-    int nid, size;
+    int nid, size, perturb;
     double lower, upper;
     ops >> Option('o', "out-dir", outdir);
     ops >> Option('i', "in-dir", indir);
     ops >> Option('t', "type", type);
     ops >> Option('n', "network-id", nid);
     ops >> Option('s', "size", size);
+    ops >> Option('p', "perturbation", perturb);
 
-    int i = 0;
-    char *task = getenv("SGE_TASK_ID");
-    if (task != NULL)
-        i = atoi(task) - 1;
+    //int i = 0;
+    //char *task = getenv("SGE_TASK_ID");
+    //if (task != NULL)
+    //    i = atoi(task) - 1;
     //lower = i / 10.0;
     //upper = (i + 1) / 10.0;
+    int i = perturb - 1;
 
     //std::string type = "ecoli";
 	//std::string wd = "/Users/bao/work/DREAM/DREAM3_in_silico_challenge/Size100/gnw/prune/";
@@ -45,7 +47,7 @@ int main(int argc, char **argv) {
 	GnwSettings::Instance()->setNumTimeSeries(1);
 	GnwSettings::Instance()->setMaxtTimeSeries(200);
 	GnwSettings::Instance()->setDt(10);
-	GnwSettings::Instance()->setMaxtSteadyStateODE(10);
+	GnwSettings::Instance()->setMaxtSteadyStateODE(500);
 	//GnwSettings::Instance()->setRelativePrecision(0);
 	GnwSettings::Instance()->setPerturbationFraction(0.8, 1);
 	
@@ -57,7 +59,8 @@ int main(int argc, char **argv) {
     ss << i + 1;
     ssn << nid;
     sssize << size;
-    std::string filename = indir + type + "-" + ssn.str() + "_1000.tsv";
+    std::string filename = indir + type + "-" + ssn.str() + "_" + sssize.str() + 
+        ".tsv";
     //std::string filename = indir + "ecoli_transcriptional_network_regulonDB_6_2.tsv";
     //std::string filename = indir + "yeast_transcriptional_network_Balaji2006.tsv";
     //std::string filename = indir + "ecoli-full.xml";

@@ -77,8 +77,9 @@ void Perturbation::printPerturbations(std::string postfix) {
 
 		// perturbations
 		for (int p=0; p<numPerturbations_; p++) {
-			for (int i=0; i<numGenes_; i++)
+			for (int i=0; i<numGenes_-1; i++)
 				data_file << perturbations_[p][i] << "\t";
+            data_file << perturbations_[p][numGenes_-1];
 			data_file << std::endl;
 		}
 

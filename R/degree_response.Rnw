@@ -325,28 +325,68 @@ print(ggplot(all,aes(time,value,group=Gene,colour=degree)) + geom_line() +
 @
 % ----------------------------------------------------------------------------
 
-<<label=gnw,echo=False,fig=True,eval=True>>=
-ts <- read.delim('~/data/DREAM/gnw/scalefree2/gnw/Size1000/norm_perturbation/mds/scalefree2-1_perturbation-1_1000_normed.dat',sep='|') 
-elist <- read.delim('~/data/DREAM/gnw/scalefree2/gnw/Size1000/input/scalefree2-1_1000.tsv',header=F)
+<<label=gnw,echo=False,fig=True,eval=False>>=
+type <- 'scalefree2'
+size <- 1000
+wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/unif_perturbation/',sep='')
+ts <- read.delim(paste(wd,type,'-1_perturbation-1_multifactorial_timeseries.tsv',sep='')) 
+perturb <- read.delim(paste(wd,type,'-1_perturbation-1_multifactorial_timeseries_perturbations.tsv',sep='')) 
+ss <- read.delim(paste(wd,type,'-1_wildtype.tsv',sep='')) 
+input <- read.delim(paste(wd,type,'-1_perturbation-1_inputs.tsv',sep='')) 
+#delta <- read.csv(paste(wd,'scalefree2-1_delta.csv',sep=''),header=F) 
+#pval <- read.delim(paste(wd,'mds/pval_scalefree2-1_perturbation-1_1000.dat',sep=''),header=F) 
+elist <- read.delim(paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/input/',type,'-1_',size,'.tsv',sep=''),header=F)
 net <- graph.data.frame(elist, directed=T)
-df <- melt(ts)
-df$time <- rep(seq(0,200,10),each=1000)
-df$degree <- degree(net)[match(as.character(df$Gene),names(degree(net)))]
+df <- melt(ts,id.vars='Time')
+df.input <- melt(input,id.vars='Time')
+#df$time <- rep(seq(0,200,10),each=1000)
+df$degree <- degree(net)[match(as.character(df$variable),names(degree(net)))]
+df$label <- paste(df$variable,df$degree)
+df.input$degree <- degree(net)[match(as.character(df.input$variable),names(degree(net)))]
+df.input$label <- paste(df.input$variable,df.input$degree)
+df$perturb <- t(perturb[match(df$variable,names(perturb))])
+df$ss <- t(ss[match(df$variable,names(ss))])
+gene.sorted <- names(degree(net))[order(degree(net),decreasing=T)]
+#df2 <- data.frame(gene=names(input)[-1],res=-log10(pval$V1),
+#    input=colSums(input)[-1],deg=degree(net)[as.character(names(ss))],
+#    perturb=abs(t(perturb)),delta=delta$V2[match(names(ss),delta$V1)],
+#    ss=t(ss))
 
-mycolor <- gray.colors(128,0.9,0)
-print(ggplot(df,aes(time,value,group=Gene,colour=degree)) + geom_line() +
-    scale_colour_gradientn(colours = mycolor)
-)
+#mycolor <- gray.colors(128,0.9,0)
+pdf(paste(wd,type,'-1_perturbation-1_ts.pdf',sep=''),8,11)
+for (i in 1:ceiling(length(gene.sorted)/12)) {
+    slice <- seq((i-1)*12+1,i*12)
+    slice <- slice[!(slice > length(gene.sorted))]
+    current <- subset(df, variable %in% gene.sorted[slice])
+    current$label <- factor(current$label, levels=current$label[order(current$degree,decreasing=T)])
+    print(ggplot(current,aes(Time,value)) + geom_line() +
+        geom_hline(aes(yintercept=ss),linetype='dashed',colour='blue') +
+        geom_hline(aes(yintercept=ss+perturb),linetype='dotted',colour='red') +
+        facet_wrap(~label,ncol=3) #+
+#    geom_text(aes(label=gene),size=3,hjust=0.2)
+        #ylim(-0.8,2.1)
+    #scale_colour_gradientn(colours = mycolor)
+    )
+}
+dev.off()
+#print(ggplot(df2,aes(res,deg)) + geom_point() + 
+#    geom_text(aes(label=gene),size=3,hjust=-0.2)
+#)
+#plot(input$G2)
 @
 % ----------------------------------------------------------------------------
 
 %\begin{figure}[ht]
 %\begin{center}
 <<label=hdf,echo=False,fig=True,eval=False>>=
-ts <- read.delim('~/data/DREAM/gnw/scalefree2/gnw/Size1000/output/mds/scalefree2-1_perturbation-1_1000_normed.dat',sep='|') 
-pval <- read.delim('~/data/DREAM/gnw/scalefree2/gnw/Size1000/output/mds/pval_scalefree2-1_perturbation-1_1000.dat',header=F) 
-elist <- read.delim('~/data/DREAM/gnw/scalefree2/gnw/Size1000/input/scalefree2-1_1000.tsv',header=F)
+type <- 'scalefree2'
+size <- 1000
+wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/max_perturbation/',sep='')
+ts <- read.delim(paste(wd,'mds/',type,'-1_perturbation-1_',size,'_normed.dat',sep=''),sep='|') 
+pval <- read.delim(paste(wd,'mds/pval_',type,'-1_perturbation-1_',size,'.dat',sep=''),header=F) 
+elist <- read.delim(paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/input/',type,'-1_',size,'.tsv',sep=''),header=F)
 net <- graph.data.frame(elist, directed=T)
+delta <- read.csv(paste(wd,type,'-1_delta.csv',sep=''),header=F) 
 #ts <- read.delim('~/geronto/data/hdf/hdf_nhk_16091.tsv')
 #pval <- read.delim('~/geronto/data/hdf/mds/pval_hdf_nhk_16091.dat', header=F)$V1
 #ppi <- read.csv('~/geronto/data/network/biogrid.degree', header=F)
@@ -354,23 +394,183 @@ net <- graph.data.frame(elist, directed=T)
 #ppi <- read.csv('~/data/network/hippie.degree', header=F)
 #idx <- match(ts$Gene, V(net)$name)
 #ts <- ts[!is.na(idx),]
-ts$degree <- sample(degree(net)[ts$Gene])
+ts$degree <- degree(net)[as.character(ts$Gene)]
 #ts$degree <- as.numeric(as.vector(ts$degree))
 ts$pval <- pval$V1
+ts$delta <- delta$V2[match(ts$Gene,delta$V1)]
 
-print(ggplot(ts, aes(-log10(pval),degree)) + 
-    geom_point() +
-    geom_text(data=ts[ts$pval<1e-10|ts$degree>200,],aes(label=Gene),size=3,
-        vjust=-0.5,alpha=0.3) +
-    #geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
-    #xlim(0,20) + ylim(0,1000) + 
-    labs(x='Response',y='Degree',title='scalefree2') 
-)
+ts$node <- 'other'
+ts$node[ts$pval<quantile(ts$pval,seq(0,1,0.05))['10%']] <- 'outlier'
+print(ggplot(ts,aes(delta,colour=node))+geom_density())
+#print(ggplot(ts, aes(-log10(pval),degree,size=delta)) + 
+#    geom_point() +
+#    #geom_text(data=ts[ts$pval<1e-2|ts$degree>150,],aes(label=Gene),size=3,
+#    #    vjust=-0.5,alpha=0.3) +
+#    #geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+#    #xlim(0,20) + ylim(0,1000) + 
+#    labs(x='Response',y='Degree',title='scalefree2 (max)') 
+#)
 @
 %\end{center}
 %\caption{Centers of mass for biological and artificial networks.}
 %\label{fig:raw}
 %\end{figure}
+
+% ----------------------------------------------------------------------------
+
+<<label=plfit,echo=False,fig=True,width=7,height=7,eval=False>>=
+source('plfit.r')
+dataset <- c('random','uniform','smallworld','scalefree','bowtie')
+
+all <- foreach (i = 1:length(dataset), .combine='rbind') %:%
+    foreach(j=1:5, .combine='rbind') %:%
+        foreach(k=1:1000, .combine='rbind') %dopar% {
+
+    dat <- read.delim(paste('~/data/DREAM/gnw/',dataset[i],'/gnw/Size1000/mds/deg_dist_',dataset[i],'-',j,'_perturbation-',k,'_1000',sep=''), header=F)
+    res <- -log10(dat$V3)
+    deg <- dat$V2
+    x <- res[res>quantile(res,seq(0,1,0.05))['95%']]
+    y <- res[deg>quantile(deg,seq(0,1,0.05))['95%']]
+    data.frame(pval=ks.test(x,y)$p.value,type=dataset[i],
+        net=as.character(j), perturbation=k)
+}
+print(ggplot(all,aes(type,-log10(pval)))+geom_violin())
+#all.plfit <- ddply(all,.(type,net,perturbation),function(x)plfit(x$res)$alpha)
+
+#print(ggplot(all, aes(x,y)) + geom_point(aes(colour=net),size=1,alpha=0.3) +  
+#    #geom_density2d() +
+#    scale_colour_brewer(palette='Set1') +
+#    geom_abline(intercept=0,slope=1,colour='blue',linetype='dashed') +
+#    facet_grid(net~type) + xlim(0,1) + ylim(0,1) +
+#    xlab('Response') + ylab('Degree') +
+#    opts(legend.position='none')
+#)
+@
+
+% ----------------------------------------------------------------------------
+
+<<label=lm,echo=False,fig=True,eval=True>>=
+type <- 'random2'
+size <- 1000
+wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/norm_perturbation/',sep='')
+all <- foreach(net=1:1, .combine='rbind') %:%
+    foreach(perturbation=1:1, .combine='rbind') %dopar% {
+        ts <- read.delim(paste(wd,type,'-',net,'_perturbation-',perturbation,'_multifactorial_timeseries.tsv',sep='')) 
+        perturb <- read.delim(paste(wd,type,'-',net,'_perturbation-',perturbation,'_multifactorial_timeseries_perturbations.tsv',sep='')) 
+        ss <- read.delim(paste(wd,type,'-',net,'_wildtype.tsv',sep='')) 
+        input <- read.delim(paste(wd,type,'-',net,'_perturbation-',perturbation,'_inputs.tsv',sep='')) 
+        delta <- read.csv(paste(wd,type,'-',net,'_delta.csv',sep=''),header=F) 
+        names(delta) <- c('V1','delta')
+        k <- read.csv(paste(wd,type,'-',net,'_k.csv',sep=''),header=F) 
+        n <- read.csv(paste(wd,type,'-',net,'_n.csv',sep=''),header=F) 
+        k.mean <- ddply(k, .(V2), summarise, k.mean=mean(V3))
+        n.mean <- ddply(n, .(V2), summarise, n.mean=mean(V3))
+        pval <- read.delim(paste(wd,'mds/pval_',type,'-',net,'_perturbation-',perturbation,'_',size,'.dat',sep=''),header=F) 
+        topo <- read.delim(paste(wd,type,'-',net,'_goldstandard_signed.tsv',sep=''),header=F) 
+        in.deg <- ddply(topo, .(V2), summarise, in.deg.act=sum(V3=='+'), 
+            in.deg.inh=sum(V3=='-'))
+        out.deg <- ddply(topo, .(V1), summarise, out.deg.act=sum(V3=='+'), 
+            out.deg.inh=sum(V3=='-'))
+        #elist <- read.delim(paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/input/',type,'-1_',size,'.tsv',sep=''),header=F)
+        #net <- graph.data.frame(elist, directed=T)
+        #df <- melt(ts,id.vars='Time')
+        #df.input <- melt(input,id.vars='Time')
+        #df$time <- rep(seq(0,200,10),each=1000)
+        #df$degree <- degree(net)[match(as.character(df$variable),names(degree(net)))]
+        #df$label <- paste(df$variable,df$degree)
+        #df.input$degree <- degree(net)[match(as.character(df.input$variable),names(degree(net)))]
+        #df.input$label <- paste(df.input$variable,df.input$degree)
+        #df <- data.frame(gene=names(ss), res=-log10(pval$V1), perturb=t(perturb), ss=t(ss))
+        df <- data.frame(gene=names(ss), res=pval$V1, perturb=t(perturb), ss=t(ss))
+        df <- merge(df, in.deg, by.x='gene', by.y='V2', all=T)
+        df <- merge(df, out.deg, by.x='gene', by.y='V1', all=T)
+        df <- merge(df, delta, by.x='gene', by.y='V1', all=T)
+        df <- merge(df, k.mean, by.x='gene', by.y='V2', all=T)
+        df <- merge(df, n.mean, by.x='gene', by.y='V2', all=T)
+        df[is.na(df)] <- 0
+        g <- glm(res ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 
+            out.deg.inh + delta + k.mean + n.mean, family=gaussian('log'), data = df)
+        g.perturb <- glm(res ~ in.deg.act + in.deg.inh + out.deg.act + 
+            out.deg.inh + delta + k.mean + n.mean, family=gaussian('log'), data = df)
+        pval.perturb <- anova.glm(g.perturb, g, test='F')$'Pr(>F)'[2]
+        g.in.deg.act <- glm(res ~ perturb + in.deg.inh + out.deg.act + 
+            out.deg.inh + delta + k.mean + n.mean, family=gaussian('log'), data = df)
+        pval.in.deg.act <- anova.glm(g.in.deg.act, g, test='F')$'Pr(>F)'[2]
+        g.in.deg.inh <- glm(res ~ perturb + in.deg.act + out.deg.act + 
+            out.deg.inh + delta + k.mean + n.mean, family=gaussian('log'), data = df)
+        pval.in.deg.inh <- anova.glm(g.in.deg.inh, g, test='F')$'Pr(>F)'[2]
+        g.out.deg.act <- glm(res ~ perturb + in.deg.act + in.deg.inh + 
+            out.deg.inh + delta + k.mean + n.mean, family=gaussian('log'), data = df)
+        pval.out.deg.act <- anova.glm(g.out.deg.act, g, test='F')$'Pr(>F)'[2]
+        g.out.deg.inh <- glm(res ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 
+            delta + k.mean + n.mean, family=gaussian('log'), data = df)
+        pval.out.deg.inh <- anova.glm(g.out.deg.inh, g, test='F')$'Pr(>F)'[2]
+        g.delta <- glm(res ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 
+            out.deg.inh + k.mean + n.mean, family=gaussian('log'), data = df)
+        pval.delta <- anova.glm(g.delta, g, test='F')$'Pr(>F)'[2]
+        g.k.mean <- glm(res ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 
+            out.deg.inh + delta + n.mean, family=gaussian('log'), data = df)
+        pval.k.mean <- anova.glm(g.k.mean, g, test='F')$'Pr(>F)'[2]
+        g.n.mean <- glm(res ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 
+            out.deg.inh + delta + k.mean, family=gaussian('log'), data = df)
+        pval.n.mean <- anova.glm(g.n.mean, g, test='F')$'Pr(>F)'[2]
+        data.frame(type=type, net=net, perturbation=perturbation, 
+            pval.perturb=pval.perturb, pval.in.deg.act=pval.in.deg.act,
+            pval.in.deg.inh=pval.in.deg.inh, pval.out.deg.act=pval.out.deg.act,
+            pval.out.deg.inh=pval.out.deg.inh, pval.delta=pval.delta,
+            pval.k.mean=pval.k.mean, pval.n.mean=pval.n.mean)
+}
+
+#g <- lm(sqrt(res) ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 
+#    out.deg.inh + delta + k.mean + n.mean - 1, data = df)
+
+#fit <- prcomp(t(df[,-(1:2)])) # SVD
+#fit.df <- as.data.frame(fit$x)
+#fit.df$sample <- rownames(fit.df)
+#p <- ggplot(data=fit.df,aes(x=PC1,y=PC2)) +
+#    geom_text(aes(label=sample))
+#print(p)
+
+#df$perturb <- t(perturb[match(df$variable,names(perturb))])
+#df$ss <- t(ss[match(df$variable,names(ss))])
+#gene.sorted <- names(degree(net))[order(degree(net),decreasing=T)]
+#df2 <- data.frame(gene=names(input)[-1],res=-log10(pval$V1),
+#    input=colSums(input)[-1],deg=degree(net)[as.character(names(ss))],
+#    perturb=abs(t(perturb)),delta=delta$V2[match(names(ss),delta$V1)],
+#    ss=t(ss))
+
+#mycolor <- gray.colors(128,0.9,0)
+#pdf(paste(wd,type,'-1_perturbation-1_ts.pdf',sep=''),8,11)
+#for (i in 1:ceiling(length(gene.sorted)/12)) {
+#    slice <- seq((i-1)*12+1,i*12)
+#    slice <- slice[!(slice > length(gene.sorted))]
+#    current <- subset(df, variable %in% gene.sorted[slice])
+#    current$label <- factor(current$label, levels=current$label[order(current$degree,decreasing=T)])
+#    print(ggplot(current,aes(Time,value)) + geom_line() +
+#        geom_hline(aes(yintercept=ss),linetype='dashed',colour='blue') +
+#        geom_hline(aes(yintercept=ss+perturb),linetype='dotted',colour='red') +
+#        facet_wrap(~label,ncol=3) #+
+##    geom_text(aes(label=gene),size=3,hjust=0.2)
+#        #ylim(-0.8,2.1)
+#    #scale_colour_gradientn(colours = mycolor)
+#    )
+#}
+#dev.off()
+#print(ggplot(df2,aes(res,deg)) + geom_point() + 
+#    geom_text(aes(label=gene),size=3,hjust=-0.2)
+#)
+#plot(input$G2)
+@
+
+% ----------------------------------------------------------------------------
+
+<<label=res,echo=False,fig=True,width=7,height=7,eval=False>>=
+pval <- read.delim('~/data/DREAM/gnw/random/gnw/Size1000/mds/pval_random-1_perturbation-1_1000.dat',header=F)
+df <- data.frame(res=-log10(pval$V1),type='random')
+pval <- read.delim('~/data/DREAM/gnw/scalefree2/gnw/Size1000/norm_perturbation/mds/pval_scalefree2-1_perturbation-1_1000.dat',header=F)
+df <- rbind(df,data.frame(res=-log10(pval$V1),type='scalefree'))
+print(ggplot(df,aes(type,res))+geom_boxplot()+scale_y_log10())
+@
 
 % ----------------------------------------------------------------------------
 
@@ -455,20 +655,28 @@ print(ggplot(ts, aes(-log10(pval),degree)) +
 
 % ----------------------------------------------------------------------------
 
-<<label=bio,echo=False,fig=True,eval=False>>=
-ecoli.elist <- read.delim('~/gnw/src/ch/epfl/lis/gnwgui/rsc/net/ecoli_transcriptional_network_regulonDB_6_2.tsv',header=F)
-ecoli <- graph.data.frame(ecoli.elist[,1:2], directed=T)
-ecoli.deg <- rbind(data.frame(deg=degree(ecoli,mode='in'),type='ecoli.in'), 
-    data.frame(deg=degree(ecoli,mode='out'),type='ecoli.out'))
-yeast.elist <- read.delim('~/gnw/src/ch/epfl/lis/gnwgui/rsc/net/yeast_transcriptional_network_Balaji2006.tsv',header=F)
-yeast <- graph.data.frame(yeast.elist[,1:2], directed=T)
-yeast.deg <- rbind(data.frame(deg=degree(yeast,mode='in'),type='yeast.in'), 
-    data.frame(deg=degree(yeast,mode='out'),type='yeast.out'))
-all.deg <- rbind(ecoli.deg, yeast.deg)
-
-print(ggplot(all.deg,aes(deg)) + geom_density() + facet_wrap(~type) +
-    scale_x_log10() + scale_y_log10()
-)
+<<label=bio,echo=False,fig=True,eval=True>>=
+#ecoli.elist <- read.delim('~/gnw/src/ch/epfl/lis/gnwgui/rsc/net/ecoli_transcriptional_network_regulonDB_6_2.tsv',header=F)
+#ecoli <- graph.data.frame(ecoli.elist[,1:2], directed=T)
+#ecoli.deg <- rbind(data.frame(deg=degree(ecoli,mode='in'),type='ecoli.in'), 
+#    data.frame(deg=degree(ecoli,mode='out'),type='ecoli.out'))
+#yeast.elist <- read.delim('~/gnw/src/ch/epfl/lis/gnwgui/rsc/net/yeast_transcriptional_network_Balaji2006.tsv',header=F)
+#yeast <- graph.data.frame(yeast.elist[,1:2], directed=T)
+#yeast.deg <- rbind(data.frame(deg=degree(yeast,mode='in'),type='yeast.in'), 
+#    data.frame(deg=degree(yeast,mode='out'),type='yeast.out'))
+#all.deg <- rbind(ecoli.deg, yeast.deg)
+#
+#print(ggplot(all.deg,aes(deg)) + geom_density() + facet_wrap(~type) +
+#    scale_x_log10() + scale_y_log10()
+#)
+hgf <- read.delim('~/data/hgf/deg_dist_hgf_17726', header=F)
+half.life <- read.delim('~/data/Friedel2009/human_rna_half_life.csv', skip=1,
+    sep=';')
+hgf$half.life <- half.life$Half.life..min.[match(hgf$V1,
+    half.life$Gene.symbol)]
+hgf <- subset(hgf, !is.na(half.life))
+hgf$res <- -log10(hgf$V3)
+g <- lm(res ~ V2 + half.life - 1, data=hgf)
 @
 
 \end{document}

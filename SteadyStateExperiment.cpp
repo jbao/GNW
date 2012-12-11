@@ -165,8 +165,8 @@ void SteadyStateExperiment::printMRNA(std::string postfix) {
 	
 	std::string absPath = GnwSettings::Instance()->getOutputDirectory();
 	
-	if (label_ != "wildtype" && postfix != "_noexpnoise")
-		printSteadyStates(absPath + grn_.getId() + postfix + "_" + label_ + ".tsv", ssPerturbation_);
+	//if (label_ != "wildtype" && postfix != "_noexpnoise")
+    printSteadyStates(absPath + grn_.getId() + postfix + "_" + label_ + ".tsv", ssPerturbation_);
 }
 
 

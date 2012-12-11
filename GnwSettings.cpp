@@ -151,8 +151,9 @@ GnwSettings::GnwSettings() {
 	randomHalfLife_ = new RandomParameterGaussian(5, 50, false);
 	//randomHalfLife_ = new RandomParameterGaussian(250, 350, false);
 	/** Dissociation constants, Dassow2000 use [0.001 1] */
-	//randomK_ = new RandomParameterUniform(0.01, 1);// DREAM3: (0.01, 1, 0, 0.2, false); lognormal: (0.1, 1, 0.1, 3.1623, true);
-	randomK_ = new RandomParameterGaussian(0.01, 1, 0, 0.2, false);
+	randomK_ = new RandomParameterUniform(0.01, 1);// DREAM3: (0.01, 1, 0, 0.2, false); lognormal: (0.1, 1, 0.1, 3.1623, true);
+	//randomK_ = new RandomParameterGaussian(0.01, 1, 0, 0.2, false);
+	//randomK_ = new RandomParameterUniform(0.5, 1.5);
 	/** Hill coefficients, Dassow2000 use [1 10] */
 	randomN_ = new RandomParameterGaussian(1, 10, 2, 2, false);
 	/** Threshold for setting weak activations in random initialization */
