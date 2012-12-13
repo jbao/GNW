@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 	GnwSettings::Instance()->setOutputDirectory(outdir);
 	GnwSettings::Instance()->setModelTranslation(false);
 	GnwSettings::Instance()->generateTsMultifactorial(true);
+	GnwSettings::Instance()->generateTsConstantInput(true);
 	GnwSettings::Instance()->setAddMicroarrayNoise(false);
 	GnwSettings::Instance()->setNumTimeSeries(1);
 	GnwSettings::Instance()->setMaxtTimeSeries(200);

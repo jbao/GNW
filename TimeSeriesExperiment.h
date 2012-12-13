@@ -58,6 +58,7 @@
  	void addNoise(Mat_DP& ts);
  	void normalize(Mat_DP& ts, double max);
     
+    //int gene_network_dynamics(double, const double xy[], double dxydt[], void *param);
  };
  
  #endif

@@ -152,6 +152,9 @@ public:
 	void generateTsDualKnockouts(bool b) { tsDualKnockouts_ = b; }
 	bool generateTsDualKnockouts() { return tsDualKnockouts_; }
 	
+	void generateTsConstantInput(bool b) { tsConstantInput_ = b; }
+	bool generateTsConstantInput() { return tsConstantInput_; }
+	
 	//public void setNumMeasuredPoints(int num) { numMeasuredPoints_ = num; }
 	//public int getNumMeasuredPoints() { return numMeasuredPoints_; }
 	
@@ -236,6 +239,8 @@ private:
 	bool tsMultifactorial_;
 	/** Generate time series for dual knockouts */
 	bool tsDualKnockouts_;
+	/** Generate time series with constant input */
+	bool tsConstantInput_;
 	/** Number of time-series experiments from different initial conditions */
 	int numTimeSeries_; 
 	/** Number of measured points per time series (must be consistent with maxtTimeSeries_ and dt_, does *not* affect precision) */

@@ -33,9 +33,9 @@ public:
  	GeneNetwork& operator=(const GeneNetwork& rhs);
 	~GeneNetwork();
 
-    static int gene_network_dynamics(double, const double xy[], double dxydt[], void *param);
+    //static int gene_network_dynamics(double, const double xy[], double dxydt[], void *param);
 
-	friend int gene_network_dynamics(double, const double xy[], double dxydt[], void *param);
+	//friend int gene_network_dynamics(double, const double xy[], double dxydt[], void *param);
 	
 	void load(const char *filename, format f);
 	void setRank(const char *filename);
@@ -60,6 +60,8 @@ public:
 	
 	Vec_DP& getX() { return x_; }
 	Vec_DP& getY() { return y_; }
+	void setX(Vec_DP& x) { x_ = x; }
+	void setY(Vec_DP& y) { y_ = y; }
 	
 	void randomInitialization();
 	void prune(std::vector<HillGene>& genes);
@@ -73,6 +75,8 @@ public:
 
     void sanityCheck();
 
+	void computeMRnaProductionRates(Vec_DP& productionRates);
+	
 private:
 	/** Current gene expression levels */
 	Vec_DP x_;
@@ -87,8 +91,6 @@ private:
 	void load_sbml(const char *filename);
 	
 	std::string getGeneReactantId(std::string& id);
-	
-	void computeMRnaProductionRates(Vec_DP& productionRates);
 	
 	void getInputs(HillGene& gene, std::vector<std::string>& inputs);
 	void getOutputs(HillGene& gene, std::vector<std::string>& outputs);

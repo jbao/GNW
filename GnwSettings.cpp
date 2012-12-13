@@ -109,6 +109,8 @@ GnwSettings::GnwSettings() {
 	tsMultifactorial_ = false;
 	/** Generate time series for dual knockouts */
 	tsDualKnockouts_ = false;
+	/** Generate time series with constant input */
+	tsConstantInput_ = false;
 	/** Number of time-series experiments from different initial conditions */
 	numTimeSeries_ = 10; 
 	/** Number of measured points per time series (must be consistent with maxtTimeSeries_ and dt_, does *not* affect precision) */

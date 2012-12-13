@@ -325,10 +325,11 @@ print(ggplot(all,aes(time,value,group=Gene,colour=degree)) + geom_line() +
 @
 % ----------------------------------------------------------------------------
 
-<<label=gnw,echo=False,fig=True,eval=False>>=
+<<label=gnw,echo=False,fig=True,eval=True>>=
 type <- 'scalefree2'
 size <- 1000
-wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/unif_perturbation/',sep='')
+#wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/unif_perturbation/',sep='')
+wd <- '~/github/GNW/test/'
 ts <- read.delim(paste(wd,type,'-1_perturbation-1_multifactorial_timeseries.tsv',sep='')) 
 perturb <- read.delim(paste(wd,type,'-1_perturbation-1_multifactorial_timeseries_perturbations.tsv',sep='')) 
 ss <- read.delim(paste(wd,type,'-1_wildtype.tsv',sep='')) 
@@ -449,7 +450,7 @@ print(ggplot(all,aes(type,-log10(pval)))+geom_violin())
 
 % ----------------------------------------------------------------------------
 
-<<label=lm,echo=False,fig=True,eval=True>>=
+<<label=lm,echo=False,fig=True,eval=False>>=
 type <- 'random2'
 size <- 1000
 wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/norm_perturbation/',sep='')
@@ -655,7 +656,7 @@ print(ggplot(df,aes(type,res))+geom_boxplot()+scale_y_log10())
 
 % ----------------------------------------------------------------------------
 
-<<label=bio,echo=False,fig=True,eval=True>>=
+<<label=bio,echo=False,fig=True,eval=False>>=
 #ecoli.elist <- read.delim('~/gnw/src/ch/epfl/lis/gnwgui/rsc/net/ecoli_transcriptional_network_regulonDB_6_2.tsv',header=F)
 #ecoli <- graph.data.frame(ecoli.elist[,1:2], directed=T)
 #ecoli.deg <- rbind(data.frame(deg=degree(ecoli,mode='in'),type='ecoli.in'), 

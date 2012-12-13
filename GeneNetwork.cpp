@@ -612,47 +612,47 @@ void GeneNetwork::dynamics(Vec_I_DP& xy, Vec_O_DP& dxydt, GeneNetwork& grn) {
 
 // ---------------------------------------------------------------------------
 
-int GeneNetwork::gene_network_dynamics(double, const double xy[], double dxydt[], void *param) { 
-	
-	GeneNetwork *grn = (GeneNetwork*) param;
-  	bool modelTranslation = GnwSettings::Instance()->getModelTranslation();
-	//double[] dxydt = new double[xy.length];
-	int size = grn->getSize();
-	
-	for (int i=0; i<size; i++) {
-        if (xy[i] >= 0)
-		    grn->x_[i] = xy[i];
-        else
-            grn->x_[i] = 0;
-		std::stringstream s1,s2;
-		s1 << i;
-		s2 << grn->x_[i];
-		//::logging::log::emit<Debug>() << "x" << s1.str().c_str() << " = " << s2.str().c_str() << ::logging::log::endl;
-	}
-	
-	if (modelTranslation)
-		for (int i=0; i<size; i++)
-			grn->y_[i] = xy[size+i];
-	else
-		grn->y_ = grn->x_;
-	
-	// dxydt temporarily used to store the production rates of mRNA
-	Vec_DP dxydt_v(size); 
-	grn->computeMRnaProductionRates(dxydt_v);
-	
-	for (int i=0; i < size; i++)
-		dxydt_v[i] = dxydt_v[i] - grn->getNodes().at(i).computeMRnaDegradationRate(grn->x_[i]);
-		
-	for (int i=0; i < size; i++)
-		dxydt[i] = dxydt_v[i];
-	
-	/*
-	if (modelTranslation)
-		for (int i=0; i<size; i++)
-			dxydt[size+i] = nodes_.at(i).getMaxTranslation()*x_[i] - nodes_.at(i).computeProteinDegradationRate(y_[i]);
-  	*/
-  	return GSL_SUCCESS;
-}
+//int GeneNetwork::gene_network_dynamics(double, const double xy[], double dxydt[], void *param) { 
+//	
+//	GeneNetwork *grn = (GeneNetwork*) param;
+//  	bool modelTranslation = GnwSettings::Instance()->getModelTranslation();
+//	//double[] dxydt = new double[xy.length];
+//	int size = grn->getSize();
+//	
+//	for (int i=0; i<size; i++) {
+//        if (xy[i] >= 0)
+//		    grn->x_[i] = xy[i];
+//        else
+//            grn->x_[i] = 0;
+//		std::stringstream s1,s2;
+//		s1 << i;
+//		s2 << grn->x_[i];
+//		//::logging::log::emit<Debug>() << "x" << s1.str().c_str() << " = " << s2.str().c_str() << ::logging::log::endl;
+//	}
+//	
+//	if (modelTranslation)
+//		for (int i=0; i<size; i++)
+//			grn->y_[i] = xy[size+i];
+//	else
+//		grn->y_ = grn->x_;
+//	
+//	// dxydt temporarily used to store the production rates of mRNA
+//	Vec_DP dxydt_v(size); 
+//	grn->computeMRnaProductionRates(dxydt_v);
+//	
+//	for (int i=0; i < size; i++)
+//		dxydt_v[i] = dxydt_v[i] - grn->getNodes().at(i).computeMRnaDegradationRate(grn->x_[i]);
+//		
+//	for (int i=0; i < size; i++)
+//		dxydt[i] = dxydt_v[i];
+//	
+//	/*
+//	if (modelTranslation)
+//		for (int i=0; i<size; i++)
+//			dxydt[size+i] = nodes_.at(i).getMaxTranslation()*x_[i] - nodes_.at(i).computeProteinDegradationRate(y_[i]);
+//  	*/
+//  	return GSL_SUCCESS;
+//}
 	
 // ============================================================================
 // PRIVATE FUNCTIONS

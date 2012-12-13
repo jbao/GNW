@@ -39,44 +39,100 @@ $Id: TimeSeriesExperiment.cpp 29 2012-01-04 17:06:55Z jbao $
 using namespace ::logging;
 	
 //extern "C"
-//inline int TimeSeriesExperiment::gene_network_dynamics(double, const double xy[], double dxydt[], void *param) { 
-//	
-//	GeneNetwork *grn = (GeneNetwork*) param;
-//  	bool modelTranslation = GnwSettings::Instance()->getModelTranslation();
-//	//double[] dxydt = new double[xy.length];
-//	int size = grn->getSize();
-//	
-//	for (int i=0; i<size; i++) {
-//		grn->x_[i] = xy[i];
-//		//std::stringstream s1,s2;
-//		//s1 << i;
-//		//s2 << x_[i];
-//		//::logging::log::emit<Debug>() << "x" << s1.str().c_str() << " = " << s2.str().c_str() << ::logging::log::endl;
-//	}
-//	
-//	if (modelTranslation)
-//		for (int i=0; i<size; i++)
-//			grn->y_[i] = xy[size+i];
-//	else
-//		grn->y_ = grn->x_;
-//	
-//	// dxydt temporarily used to store the production rates of mRNA
-//	Vec_DP dxydt_v(size); 
-//	grn->computeMRnaProductionRates(dxydt_v);
-//	
-//	for (int i=0; i < size; i++)
-//		dxydt_v[i] = dxydt_v[i] - grn->getNodes().at(i).computeMRnaDegradationRate(grn->x_[i]);
-//		
-//	for (int i=0; i < size; i++)
-//		dxydt[i] = dxydt_v[i];
-//	
-//	/*
-//	if (modelTranslation)
-//		for (int i=0; i<size; i++)
-//			dxydt[size+i] = nodes_.at(i).getMaxTranslation()*x_[i] - nodes_.at(i).computeProteinDegradationRate(y_[i]);
-//  	*/
-//  	return GSL_SUCCESS;
-//}
+inline int gene_network_dynamics(double, const double xy[], double dxydt[], void *param) { 
+	
+	TimeSeriesExperiment *exp = (TimeSeriesExperiment*) param;
+	GeneNetwork* grn = &(exp->getGrn());
+  	bool modelTranslation = GnwSettings::Instance()->getModelTranslation();
+	//double[] dxydt = new double[xy.length];
+	int size = grn->getSize();
+	
+    Vec_DP x(size), y(size);
+	for (int i=0; i<size; i++) {
+		if (xy[i] >= 0)
+            x[i] = xy[i];
+        else
+            x[i] = 0;
+		//std::stringstream s1,s2;
+		//s1 << i;
+		//s2 << x_[i];
+		//::logging::log::emit<Debug>() << "x" << s1.str().c_str() << " = " << s2.str().c_str() << ::logging::log::endl;
+	}
+	grn->setX(x);
+
+	if (modelTranslation)
+		for (int i=0; i<size; i++)
+			y[i] = xy[size+i];
+	else
+		y = x;
+    grn->setY(y);
+	
+	// dxydt temporarily used to store the production rates of mRNA
+	Vec_DP dxydt_v(size); 
+	grn->computeMRnaProductionRates(dxydt_v);
+	
+	for (int i=0; i < size; i++)
+		dxydt_v[i] = dxydt_v[i] - grn->getNodes().at(i).computeMRnaDegradationRate(grn->getX()[i]);
+		
+	for (int i=0; i < size; i++)
+		dxydt[i] = dxydt_v[i];
+	
+	/*
+	if (modelTranslation)
+		for (int i=0; i<size; i++)
+			dxydt[size+i] = nodes_.at(i).getMaxTranslation()*x_[i] - nodes_.at(i).computeProteinDegradationRate(y_[i]);
+  	*/
+  	return GSL_SUCCESS;
+}
+	
+// ----------------------------------------------------------------------------
+
+inline int gene_network_dynamics_constant_input(double, const double xy[], double dxydt[], void *param) { 
+	
+	TimeSeriesExperiment *exp = (TimeSeriesExperiment*) param;
+    Perturbation* perturb = exp->getPerturbation();
+	GeneNetwork* grn = &(exp->getGrn());
+  	bool modelTranslation = GnwSettings::Instance()->getModelTranslation();
+	//double[] dxydt = new double[xy.length];
+	int size = grn->getSize();
+	
+    Vec_DP x(size), y(size);
+	for (int i=0; i<size; i++) {
+        if (xy[i] >= 0)
+		    x[i] = xy[i];
+        else
+            x[i] = 0;
+		//std::stringstream s1,s2;
+		//s1 << i;
+		//s2 << x_[i];
+		//::logging::log::emit<Debug>() << "x" << s1.str().c_str() << " = " << s2.str().c_str() << ::logging::log::endl;
+	}
+	grn->setX(x);
+
+	if (modelTranslation)
+		for (int i=0; i<size; i++)
+			y[i] = xy[size+i];
+	else
+		y = x;
+	grn->setY(y);
+
+	// dxydt temporarily used to store the production rates of mRNA
+	Vec_DP dxydt_v(size); 
+	grn->computeMRnaProductionRates(dxydt_v);
+	
+	for (int i=0; i < size; i++)
+		dxydt_v[i] = dxydt_v[i] - grn->getNodes().at(i).computeMRnaDegradationRate(grn->getX()[i]) + perturb->getPerturbations()[0][i];
+		
+	for (int i=0; i < size; i++)
+		dxydt[i] = dxydt_v[i];
+	
+	/*
+	if (modelTranslation)
+		for (int i=0; i<size; i++)
+			dxydt[size+i] = nodes_.at(i).getMaxTranslation()*x_[i] - nodes_.at(i).computeProteinDegradationRate(y_[i]);
+  	*/
+  	return GSL_SUCCESS;
+}
 	
 // ============================================================================
 // PUBLIC METHODS
@@ -336,7 +392,11 @@ void TimeSeriesExperiment::integrate(int k) {
     gsl_odeiv_control * c = gsl_odeiv_control_y_new (GnwSettings::Instance()->getAbsolutePrecision(), GnwSettings::Instance()->getRelativePrecision());
     gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (numGenes_);
      
-    gsl_odeiv_system sys = {GeneNetwork::gene_network_dynamics, NULL, numGenes_, &grn_};
+    gsl_odeiv_system sys;
+	if (!GnwSettings::Instance()->generateTsConstantInput()) 
+        sys = {gene_network_dynamics, NULL, numGenes_, this};
+    else
+        sys = {gene_network_dynamics_constant_input, NULL, numGenes_, this};
         
     double y[numGenes_];
     Vec_DP y_vec(numGenes_);
@@ -442,6 +502,155 @@ void TimeSeriesExperiment::integrate(int k) {
 	//	log.log(Level.INFO, "SDE: " + solver.getXNegativeCounter() + " times a concentration became negative due to noise and was set to 0");
 
 }
+	
+// ----------------------------------------------------------------------------
+
+/**
+ * Run the numerical integration of the k'th time-series and add the results to timeSeries_ and timeSeriesProteins_.
+ * The wild-type is restored after the experiments.
+ */
+//void TimeSeriesExperiment::integrateConstantInput(int k) {
+//
+//	// allocate space
+//	//Mat_DP ts(numTimePoints_, numGenes_);
+//	//Mat_DP input(numTimePoints_, numGenes_);
+//	//Mat_DP output(numTimePoints_, numGenes_);
+//	//Mat_DP tsProteins;
+//	////DoubleMatrix2D tsProteins = null;
+//	//if (GnwSettings::Instance()->getModelTranslation())
+//	//	Mat_DP tsProteins(numTimePoints_, numGenes_);
+//    std::vector<Vec_DP> ts_vec;
+//
+//	if (xy0_.size() == 0) 
+//		throw Exception("TimeSeriesExperiment:integrateConstantInput(): No initial condition set!");
+//	
+//	double t = 0;
+//	double dt = GnwSettings::Instance()->getDt();
+//	
+//	int pt = 1;
+//	
+//	// gsl
+//	const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
+//     
+//    gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, numGenes_);
+//    gsl_odeiv_control * c = gsl_odeiv_control_y_new (GnwSettings::Instance()->getAbsolutePrecision(), GnwSettings::Instance()->getRelativePrecision());
+//    gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (numGenes_);
+//     
+//    gsl_odeiv_system sys = {GeneNetwork::gene_network_dynamics, NULL, numGenes_, &grn_};
+//        
+//    double y[numGenes_];
+//    Vec_DP y_vec(numGenes_);
+//    for (int i=0; i<numGenes_; i++) {
+//		y[i] = xy0_[i];
+//		y_vec[i] = xy0_[i];
+//        std::stringstream s1, s2;
+//        s1 << i;
+//        s2 << y[i];
+//		//::logging::log::emit<Debug>() << "y" << s1.str().c_str() << " = " << s2.str().c_str() << ::logging::log::endl;
+//	}
+//    // non-adaptive steps
+//    double y_err[numGenes_];
+//    double dydt_in[numGenes_], dydt_out[numGenes_];
+//     
+//    /* initialise dydt_in from system parameters */
+//    GSL_ODEIV_FN_EVAL(&sys, t, y, dydt_in);
+//    // initialize inputs
+//    Vec_DP current_input(numGenes_);
+//    grn_.computeInputs(y_vec, current_input);
+//    //for (int i=0; i<numGenes_; i++) {
+//	//	input[0][i] = current_input[i];
+//    //    int numOutputs = grn_.getNodes()[i].getNumOutputs();
+//    //    output[0][i] = y_vec[i] * numOutputs;
+//    //}
+//     
+//    Vec_DP previous_y;
+//    ts_vec.push_back(y_vec);
+//    do {
+//        
+//        for (int i=0; i<numGenes_; i++) {
+//            y[i] += perturbation_->getPerturbations()[k][i];
+//            y_vec[i] = y[i];
+//        }
+//	
+//        previous_y = y_vec;
+//        
+//        int status = gsl_odeiv_step_apply (s, t, dt, 
+//                                              y, y_err, 
+//                                              dydt_in, 
+//                                              dydt_out, 
+//                                              &sys);
+//     
+//        if (status != GSL_SUCCESS)
+//            break;
+//     
+//     	std::stringstream ss;
+//        ss << t;
+//        //::logging::log::emit<Debug>() << "t = " << ss.str().c_str() << ::logging::log::endl;
+//     
+//     	// save results
+//     	for (int i=0; i<numGenes_; i++) {
+//            if (y[i] < 0)
+//                y[i] = 0;
+//			y_vec[i] = y[i];
+//        }
+//     	grn_.computeInputs(y_vec, current_input);
+//     	for (int i=0; i<numGenes_; i++) {
+//     		//ts[pt][i] = y[i];
+//        	dydt_in[i] = dydt_out[i];
+//        	//input[pt][i] = current_input[i];
+//            //int numOutputs = grn_.getNodes()[i].getNumOutputs();
+//            //output[pt][i] = y_vec[i] * numOutputs;
+//        }
+//     
+//        t += dt;
+//        pt++;
+//     
+//        ts_vec.push_back(y_vec);
+//
+//    } while(!converged(previous_y,y_vec));
+//
+//    gsl_odeiv_evolve_free (e);
+//    gsl_odeiv_control_free (c);
+//    gsl_odeiv_step_free (s);
+//
+//	// add the new time-series data to the array lists
+//	timeSeries_.push_back(ts);
+//	inputs_.push_back(input);
+//	outputs_.push_back(output);
+//	if (GnwSettings::Instance()->getModelTranslation())
+//		timeSeriesProteins_.push_back(tsProteins);
+//	
+//}
+	
+// ----------------------------------------------------------------------------
+
+/** 
+ * Implements the method gsl_multiroot_test_delta() of GSL:
+ * This function tests for the convergence of the sequence by comparing the last step dx
+ * with the absolute error epsabs and relative error epsrel to the current position x.
+ * The test returns true if the following condition is achieved:
+ * 		|dx_i| < epsabs + epsrel |x_i|
+ * for each component of x and returns false otherwise.
+ */
+//bool TimeSeriesExperiment::converged(Vec_DP& previousState, Vec_DP& state) {
+//	 
+//	double absolutePrecision = GnwSettings::Instance()->getAbsolutePrecision();
+//	double relativePrecision = GnwSettings::Instance()->getRelativePrecision();
+//	 
+//	for (int i=0; i<previousState.size(); i++) {
+//		
+//		double dxy = abs(previousState[i] - state[i]); 
+//		
+//		if (dxy > absolutePrecision + relativePrecision*abs(state[i])) {
+//			// remember point
+//			for (int k=0; k<previousState.size(); k++)
+//				previousState[k] = state[k];
+//			
+//			return false;
+//		}
+//	}
+//	return true;
+//}
 	
 // ----------------------------------------------------------------------------
 

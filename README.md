@@ -8,6 +8,15 @@ See also http://sourceforge.net/projects/gnw/
 Workflow
 --------
 
+-   Generate network topology by the `generate_graph` function in 
+    `python/network.py`, implemented with the `NetworkX` library. Within the
+    script, one can specify the size of the network, the number of networks
+    and the directory to save the edge list `.tsv` file. For example, start
+    a python console by `ipython` within the `python/` directory, then
+        
+        from network import generate_graph
+        generate_graph('scalefree')
+
 -   Use GNW to generate the time series. To submit the job to the SGE queueing 
     system, use the `gnw.sh` script, or for example
 
