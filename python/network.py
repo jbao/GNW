@@ -22,16 +22,16 @@ from mpl_toolkits.mplot3d import Axes3D
 from os import system, getcwd
 #import community
 #import linreg
-import data
-reload(data)
+#import data
+#reload(data)
 import imp
 #f, filename, desc = imp.find_module('param_loader', [getcwd()+'/gnw/'])
 #pl = imp.load_module('param_loader', f, filename, desc)
 #from gnw.param_loader import ParamLoader
 #reload(param_loader)
 #from tree import rtree
-import half_life 
-reload(half_life)
+#import half_life 
+#reload(half_life)
 
 #rcParams['axes.labelsize'] = 30
 #rcParams['axes.titlesize'] = 32
@@ -709,11 +709,19 @@ def generate_graph(type):
         if type == 'uniform':
             connected = False
             while not connected:
-                g = nx.directed_configuration_model([int(i) for i in \
-                    rand(size)*degree],\
-                    [int(i) for i in rand(size)*degree], \
-                    create_using=nx.DiGraph())
-                connected = nx.algorithms.components.is_connected(g.to_undirected())
+                #g = nx.directed_configuration_model([int(i) for i in \
+                #    rand(size)*degree],\
+                #    [int(i) for i in rand(size)*degree], \
+                #    create_using=nx.DiGraph())
+                ug = nx.random_regular_graph(7, size)
+                connected = nx.algorithms.components.is_connected(ug)
+            g = nx.DiGraph()
+            g.add_nodes_from(ug.nodes())
+            for e in ug.edges():
+                if np.random.rand() < 0.5:
+                    g.add_edge(e[0],e[1])
+                else:
+                    g.add_edge(e[1],e[0])
         #g = nx.connected_watts_strogatz_graph(size, degree, 0.1)
         elif type == 'scalefree':
             #g = nx.barabasi_albert_graph(size, degree)

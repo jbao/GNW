@@ -16,7 +16,7 @@ wd = '/home/jbao/data/DREAM/gnw/'+net+'/gnw/Size1000/norm_perturbation/'
 #wd = '/Users/bao/work/DREAM/DREAM3_in_silico_challenge/Size'+str(size)+'/gnw/'
 n_perturb = 1
 delim = '|'
-n_networks = sys.argv[3]
+n_networks = int(sys.argv[3])
 
 #i_network = int(os.getenv('SGE_TASK_ID'))
 fileList = os.listdir(wd)

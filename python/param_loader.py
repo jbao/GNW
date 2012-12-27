@@ -226,7 +226,7 @@ def flatten(d):
 
 if __name__ == '__main__':
     #close('all')
-    type = 'random2'
+    type = 'uniform2'
     wd = "/home/jbao/data/DREAM/gnw/"+type+"/gnw/Size1000/norm_perturbation/"
     #wd = '/home/jbao/data/DREAM/DREAM3/prune/Size100/'
     for i in range(100):

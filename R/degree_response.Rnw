@@ -325,7 +325,7 @@ print(ggplot(all,aes(time,value,group=Gene,colour=degree)) + geom_line() +
 @
 % ----------------------------------------------------------------------------
 
-<<label=gnw,echo=False,fig=True,eval=True>>=
+<<label=gnw,echo=False,fig=True,eval=False>>=
 type <- 'scalefree2'
 size <- 1000
 #wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/unif_perturbation/',sep='')
@@ -450,8 +450,8 @@ print(ggplot(all,aes(type,-log10(pval)))+geom_violin())
 
 % ----------------------------------------------------------------------------
 
-<<label=lm,echo=False,fig=True,eval=False>>=
-type <- 'random2'
+<<label=lm,echo=False,fig=True,eval=True>>=
+type <- 'scalefree2'
 size <- 1000
 wd <- paste('~/data/DREAM/gnw/',type,'/gnw/Size',size,'/norm_perturbation/',sep='')
 all <- foreach(net=1:1, .combine='rbind') %:%
@@ -520,6 +520,7 @@ all <- foreach(net=1:1, .combine='rbind') %:%
             pval.in.deg.inh=pval.in.deg.inh, pval.out.deg.act=pval.out.deg.act,
             pval.out.deg.inh=pval.out.deg.inh, pval.delta=pval.delta,
             pval.k.mean=pval.k.mean, pval.n.mean=pval.n.mean)
+        g
 }
 
 #g <- lm(sqrt(res) ~ perturb + in.deg.act + in.deg.inh + out.deg.act + 

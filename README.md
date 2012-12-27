@@ -5,6 +5,12 @@ C++ version of GeneNetWeaver
 
 See also http://sourceforge.net/projects/gnw/
 
+To simulate time series with constant input, add
+
+    GnwSettings::Instance()->generateTsConstantInput(true);
+
+in `main.cpp`, otherwise keep this flag `false`.
+
 Workflow
 --------
 

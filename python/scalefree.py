@@ -9,7 +9,7 @@ from plfit import plfit
 #g = nx.barabasi_albert_graph(size, degree)
 # in-degree: Poisson; out-degree: power-law
 size = 1000
-for n in range(100):
+for n in range(1):
     connected = False
     #while not connected:
     #    print 'is connected',connected
@@ -48,26 +48,27 @@ for n in range(100):
         #print 'is connected?',connected
         #g = nx.directed_configuration_model(in_ds, out_ds)
         #g = nx.configuration_model(ds)
-        g = nx.scale_free_graph(size, 0.1, 0.1, 0.8)
-        print 'max in-degree',max(g.in_degree().values())
-        print 'plfit',plfit(g.degree().values())
+        #g = nx.scale_free_graph(size, 0.1, 0.1, 0.8)
+        g = nx.random_regular_graph(10, size)
+        #print 'max in-degree',max(g.in_degree().values())
+        #print 'plfit',plfit(g.degree().values())
         connected = nx.algorithms.components.is_connected(g.to_undirected())
-    g = nx.DiGraph(g)
-    g.remove_edges_from(g.selfloop_edges())
-    #dg = nx.DiGraph()
-    #dg.add_nodes_from(g.nodes())
-    #for e in g.edges():
-    #    if np.random.rand() < 0.5:
-    #        dg.add_edge(e[0],e[1])
-    #    else:
-    #        dg.add_edge(e[1],e[0])
-    g = nx.relabel_nodes(g, dict(zip(g.nodes(), ['G'+str(i+1) for i in \
-            range(size)])))
-    wd = '/home/jbao/data/DREAM/gnw/scalefree2/gnw/Size'+str(size)+'/'
-    if not os.path.isdir(wd):
-        os.makedirs(wd)
-    nx.write_edgelist(g, wd+'scalefree2-'+str(n+1)+'_'+str(size)+'.tsv', \
-            data=False, delimiter='\t')
+    #g = nx.DiGraph(g)
+    #g.remove_edges_from(g.selfloop_edges())
+    dg = nx.DiGraph()
+    dg.add_nodes_from(g.nodes())
+    for e in g.edges():
+        if np.random.rand() < 0.5:
+            dg.add_edge(e[0],e[1])
+        else:
+            dg.add_edge(e[1],e[0])
+    #g = nx.relabel_nodes(g, dict(zip(g.nodes(), ['G'+str(i+1) for i in \
+    #        range(size)])))
+    #wd = '/home/jbao/data/DREAM/gnw/scalefree2/gnw/Size'+str(size)+'/'
+    #if not os.path.isdir(wd):
+    #    os.makedirs(wd)
+    #nx.write_edgelist(g, wd+'scalefree2-'+str(n+1)+'_'+str(size)+'.tsv', \
+    #        data=False, delimiter='\t')
     #pylab.savetxt(wd+'hub-'+str(n+1)+'_'+str(size)+'_degree.tsv', 
     #        pylab.c_[g.in_degree().values(),g.out_degree().values()], '%d', 
     #        delimiter='\t')
